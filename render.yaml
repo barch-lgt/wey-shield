@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: wey-shield
+    runtime: docker
+    dockerfilePath: ./docker/Dockerfile
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: GROQ_API_KEY
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_KEY
+        sync: false
+      - key: SHIELD_SCOPE_SALT
+        generateValue: true
+      - key: INTERNAL_API_KEY
+        generateValue: true
