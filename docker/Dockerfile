@@ -1,13 +1,15 @@
-FROM projectdiscovery/nuclei:latest AS pd-tools
+FROM projectdiscovery/nuclei:latest AS nuclei-tool
+FROM projectdiscovery/subfinder:latest AS subfinder-tool
+FROM projectdiscovery/httpx:latest AS httpx-tool
 
 FROM python:3.11-slim
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PATH="/usr/local/bin:$PATH"
 
-COPY --from=pd-tools /usr/local/bin/nuclei /usr/local/bin/nuclei
-COPY --from=pd-tools /usr/local/bin/subfinder /usr/local/bin/subfinder
-COPY --from=pd-tools /usr/local/bin/httpx /usr/local/bin/httpx
+COPY --from=nuclei-tool /usr/local/bin/nuclei /usr/local/bin/nuclei
+COPY --from=subfinder-tool /usr/local/bin/subfinder /usr/local/bin/subfinder
+COPY --from=httpx-tool /usr/local/bin/httpx /usr/local/bin/httpx
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         nmap \
