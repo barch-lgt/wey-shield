@@ -69,18 +69,18 @@ class ShieldMemory:
             .execute()
         )
         d = res.data
-        return ScanJob(
-            id=d["id"],
-            client_id=d["client_id"],
-            targets=d["targets"],
-            scan_type=d["scan_type"],
-            language=d["language"],
-            status=ScanStatus(d["status"]),
-            created_at=datetime.fromisoformat(d["created_at"]),
-            authorisation_id=d["authorisation_id"],
-            error=d.get("error"),
-        )
-
+return ScanJob(
+    id=d["id"],
+    client_id=d["client_id"],
+    targets=d["targets"],
+    scan_type=d["scan_type"],
+    language=d["language"],
+    status=ScanStatus(d["status"]),
+    scope_token=d["scope_token"],
+    created_at=datetime.fromisoformat(d["created_at"]),
+    authorisation_id=d["authorisation_id"],
+    error=d.get("error"),
+)
     # ------------------------------------------------------------------ #
     #  Results                                                             #
     # ------------------------------------------------------------------ #
