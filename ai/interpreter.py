@@ -152,7 +152,7 @@ JSON Schema:
                 for f in vulns.findings
             ],
             "counts": {
-                s.value: sum(1 for f in vulns.findings if f.severity == s)
+                s: sum(1 for f in vulns.findings if f.severity == s)
                 for s in ["critical", "high", "medium", "low"]
             },
             "dragon_confirmed_count": len(dragon.confirmed_critical),
