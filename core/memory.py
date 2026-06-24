@@ -87,12 +87,12 @@ class ShieldMemory:
 
     async def save_result(self, result: ScanResult):
         data = {
-            "job_id": result.job_id,
-            "recon": asdict(result.recon),
-            "vulnerabilities": asdict(result.vulnerabilities),
-            "ai_summary": asdict(result.ai_summary),
-            "completed_at": result.completed_at.isoformat(),
-        }
+    "job_id": result.job_id,
+    "recon_data": asdict(result.recon),
+    "vuln_data": asdict(result.vulnerabilities),
+    "ai_summary": asdict(result.ai_summary),
+    "completed_at": result.completed_at.isoformat(),
+}
         self.client.table("scan_results").upsert(data).execute()
 
     async def get_result(self, job_id: str) -> Optional[ScanResult]:
