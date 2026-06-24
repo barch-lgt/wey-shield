@@ -123,7 +123,7 @@ class ShieldMemory:
     #  Training archive — the self-improvement engine                     #
     # ------------------------------------------------------------------ #
 
-async def archive_for_training(self, job: ScanJob, result: ScanResult):
+    async def archive_for_training(self, job: ScanJob, result: ScanResult):
         import hashlib
         anon_client = hashlib.sha256(
             f"{job.client_id}:training_salt".encode()
@@ -150,6 +150,7 @@ async def archive_for_training(self, job: ScanJob, result: ScanResult):
         }
         self.client.table("training_archive").insert(record).execute()
         logger.info(f"📚 Training record archived for job {job.id}")
+
     async def submit_feedback(
         self,
         job_id: str,
