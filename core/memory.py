@@ -46,16 +46,18 @@ class ShieldMemory:
     # ------------------------------------------------------------------ #
 
     async def save_job(self, job: ScanJob):
-        data = {
-            "id": job.id,
-            "client_id": job.client_id,
-            "targets": job.targets,
-            "scan_type": job.scan_type,
-            "language": job.language,
-            "status": job.status.value,
-            "created_at": job.created_at.isoformat(),
-            "authorisation_id": job.authorisation_id,
-            "error": job.error,
+         data = {
+    "id": job.id,
+    "client_id": job.client_id,
+    "targets": job.targets,
+    "scan_type": job.scan_type,
+    "language": job.language,
+    "status": job.status.value,
+    "scope_token": job.scope_token,
+    "created_at": job.created_at.isoformat(),
+    "authorisation_id": job.authorisation_id,
+    "error": job.error,
+
         }
         self.client.table("scan_jobs").upsert(data).execute()
 
