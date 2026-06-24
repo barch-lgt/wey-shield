@@ -446,8 +446,8 @@ class WeyShieldScanner:
     async def _nmap_scan(self, targets: list[str]) -> dict:
         results = {}
         for t in targets:
-            cmd = ["nmap", "-sV", "--open", "-T4", "-oJ", "-", t]
-            stdout, _ = await self._run_cmd(cmd, timeout=RECON_TIMEOUT)
+            cmd = ["nmap", "-sV", "--open", "-T4", "--host-timeout", "20s", "-oJ", "-", t]
+            stdout, _ = await self._run_cmd(cmd, timeout=60)
             results[t] = {"raw": (stdout or "")[:500]}
         return results
 
