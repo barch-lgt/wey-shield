@@ -123,21 +123,7 @@ class ShieldMemory:
     #  Training archive — the self-improvement engine                     #
     # ------------------------------------------------------------------ #
 
-    async def archive_for_training(self, job: ScanJob, result: ScanResult):
-        """
-        Store a training record for every completed scan.
-
-        This is the long game. As Wey Shield processes hundreds of scans:
-        - Patterns in findings become recognisable
-        - AI interpretations can be compared against human feedback
-        - Language-specific quirks are captured (Amharic, English, etc.)
-        - The system learns what "high quality" analysis looks like
-
-        Future: fine-tune a lightweight security LLM on this corpus.
-        The model starts generic (Groq/llama3) and over time becomes
-        Wey Shield's own, trained on real African enterprise security data.
-        """
-        # Anonymise client ID for training (hash it)
+async def archive_for_training(self, job: ScanJob, result: ScanResult):
         import hashlib
         anon_client = hashlib.sha256(
             f"{job.client_id}:training_salt".encode()
@@ -150,24 +136,20 @@ class ShieldMemory:
             "language": job.language,
             "scan_type": job.scan_type,
             "targets_count": len(job.targets),
-            "recon_raw": asdict(result.recon),
-            "vuln_raw": asdict(result.vulnerabilities),
-            "ai_interpretation": asdict(result.ai_summary),
+            "raw_scan_payload": asdict(result.recon),
+            "ai_output": asdict(result.ai_summary),
+            "ai_prompt_version": result.ai_summary.prompt_version,
             "finding_count": len(result.vulnerabilities.findings),
             "critical_count": result.vulnerabilities.critical_count(),
             "risk_score": result.ai_summary.risk_score,
             "model_used": result.ai_summary.model_used,
-            "prompt_version": result.ai_summary.prompt_version,
             "created_at": datetime.now(timezone.utc).isoformat(),
-            # These get filled in later by client feedback
             "client_feedback_score": None,
-            "false_positives_flagged": [],
-            "human_verified_findings": [],
+            "false_positives": [],
             "outcome_label": None,
         }
         self.client.table("training_archive").insert(record).execute()
         logger.info(f"📚 Training record archived for job {job.id}")
-
     async def submit_feedback(
         self,
         job_id: str,
