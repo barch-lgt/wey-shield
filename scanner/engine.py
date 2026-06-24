@@ -115,15 +115,20 @@ class WeyShieldScanner:
 
         ports_t = asyncio.create_task(self._nmap_scan(targets))
         subs_t = asyncio.create_task(self._subfinder(targets))
+        crt_t = asyncio.create_task(self._crtsh_lookup(targets[0]))
         heads_t = asyncio.create_task(self._httpx_probe(targets))
         profiles_t = asyncio.gather(*[self.profile_target(t) for t in targets])
 
-        (open_ports, subdomains, http_headers, profile_list) = await asyncio.gather(
-            ports_t, subs_t, heads_t, profiles_t, return_exceptions=True
+        (open_ports, subdomains, crt_subs, http_headers, profile_list) = await asyncio.gather(
+            ports_t, subs_t, crt_t, heads_t, profiles_t, return_exceptions=True
         )
 
         open_ports = open_ports if isinstance(open_ports, dict) else {}
         subdomains = subdomains if isinstance(subdomains, list) else []
+        crt_subs = crt_subs if isinstance(crt_subs, list) else []
+        subdomains = list(set(subdomains + crt_subs))
+        crt_subs = crt_subs if isinstance(crt_subs, list) else []
+        subdomains = list(set(subdomains + crt_subs))
         http_headers = http_headers if isinstance(http_headers, dict) else {}
         profiles = {}
         if isinstance(profile_list, list):
@@ -458,10 +463,31 @@ class WeyShieldScanner:
                     except Exception:
                         pass
         return [s for s in subs if s]
+    async def _crtsh_lookup(self, domain: str) -> list[str]:
+        """Find subdomains via certificate transparency logs — bypasses Cloudflare."""
+        try:
+            import urllib.request
+            url = f"https://crt.sh/?q=%.{domain}&output=json"
+            req = urllib.request.Request(url, headers={"User-Agent": "WeyShield/1.0"})
+            with urllib.request.urlopen(req, timeout=15) as r:
+                data = json.loads(r.read())
+            seen = set()
+            results = []
+            for entry in data:
+                name = entry.get("name_value", "")
+                for sub in name.split("\n"):
+                    sub = sub.strip().lstrip("*.")
+                    if domain in sub and sub not in seen:
+                        seen.add(sub)
+                        results.append(sub)
+            return results
+        except Exception as e:
+            logger.warning(f"crt.sh lookup failed: {e}")
+            return []
 
     async def _httpx_probe(self, targets: list[str]) -> dict:
         urls = [f"https://{t}" if not t.startswith("http") else t for t in targets]
-        cmd = ["httpx", "-l", "/dev/stdin", "-json", "-tech-detect",
+        cmd = ["httpx", "-l", "/dev/stdin", "-jsonl", "-tech-detect",
                "-status-code", "-title", "-follow-redirects", "-silent"]
         stdout, _ = await self._run_cmd(cmd, timeout=60, stdin_data="\n".join(urls).encode())
         results = {}
