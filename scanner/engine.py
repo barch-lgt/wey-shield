@@ -63,7 +63,7 @@ class WeyShieldScanner:
         A Linux server gets different checks than a Windows IIS box.
         """
         logger.info(f"🔬 Profiling {target}...")
-        cmd = ["nmap", "-sV", "-O", "--osscan-limit", "-T3", "--open", target]
+        cmd = ["nmap", "-sV", "--osscan-limit", "-T4", "--open", "--host-timeout", "30s", target]
         stdout, _ = await self._run_cmd(cmd, timeout=90)
 
         system_type = SystemType.UNKNOWN
@@ -166,7 +166,7 @@ class WeyShieldScanner:
         cmd = [
             "nuclei", "-l", targets_file,
             *template_args,
-            "-json", "-silent",
+            "-jsonl", "-silent",
             "-rate-limit", "30",
             "-bulk-size", "10",
             "-concurrency", "5",
