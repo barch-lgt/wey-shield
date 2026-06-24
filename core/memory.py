@@ -45,7 +45,7 @@ class ShieldMemory:
     #  Scan Jobs                                                           #
     # ------------------------------------------------------------------ #
 
-  async def save_job(self, job: ScanJob):
+    async def save_job(self, job: ScanJob):
         data = {
             "id": job.id,
             "client_id": job.client_id,
