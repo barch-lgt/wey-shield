@@ -46,7 +46,7 @@ class WeyShieldScanner:
         self._check_tools()
 
     def _check_tools(self):
-        tools = ["nmap", "nuclei", "subfinder", "httpx"]
+        tools = ["nmap", "nuclei", "subfinder", "httpx_pd"]
         missing = [t for t in tools if not shutil.which(t)]
         if missing:
             logger.warning(f"⚠️  Missing tools (install via Dockerfile): {missing}")
@@ -289,7 +289,7 @@ class WeyShieldScanner:
         # Just verify the login panel is publicly accessible
         for port in profile.open_ports:
             if port in (80, 443, 8080, 8443):
-                cmd = ["httpx", "-u", f"https://{target}:{port}/admin",
+                cmd = ["httpx_pd", "-u", f"https://{target}:{port}/admin",
                        "-status-code", "-silent", "-no-color"]
                 stdout, _ = await self._run_cmd(cmd, timeout=15)
                 if stdout and ("200" in stdout or "401" in stdout or "403" in stdout):
@@ -304,7 +304,7 @@ class WeyShieldScanner:
     async def _check_exposure(self, url: str) -> dict:
         if not url:
             return {"status": "no_url", "confirmed": False}
-        cmd = ["httpx", "-u", url, "-status-code", "-silent", "-no-color"]
+        cmd = ["httpx_pd", "-u", url, "-status-code", "-silent", "-no-color"]
         stdout, _ = await self._run_cmd(cmd, timeout=10)
         confirmed = stdout and "200" in stdout
         return {
@@ -324,7 +324,7 @@ class WeyShieldScanner:
         }
 
     async def _check_headers(self, target: str) -> dict:
-        cmd = ["httpx", "-u", f"https://{target}", "-include-response-header",
+        cmd = ["httpx_pd", "-u", f"https://{target}", "-include-response-header",
                "-silent", "-no-color"]
         stdout, _ = await self._run_cmd(cmd, timeout=10)
         missing = [h for h in ["strict-transport-security", "x-frame-options",
@@ -339,7 +339,7 @@ class WeyShieldScanner:
     async def _confirm_url_response(self, url: str) -> dict:
         if not url:
             return {"status": "no_evidence", "confirmed": False}
-        cmd = ["httpx", "-u", url, "-status-code", "-silent", "-no-color"]
+        cmd = ["httpx_pd", "-u", url, "-status-code", "-silent", "-no-color"]
         stdout, _ = await self._run_cmd(cmd, timeout=10)
         confirmed = stdout and any(c in stdout for c in ["200", "301", "302"])
         return {
@@ -384,7 +384,7 @@ class WeyShieldScanner:
 
         for rps in rps_steps:
             cmd = [
-                "httpx",
+                "httpx_pd",
                 "-u", f"https://{target}",
                 "-rate-limit", str(rps),
                 "-threads", str(min(rps, 10)),
@@ -492,7 +492,7 @@ class WeyShieldScanner:
             f.write("\n".join(urls))
             targets_file = f.name
         cmd = [
-            "httpx", "-l", targets_file,
+            "httpx_pd", "-l", targets_file,
             "-json", "-td",
             "-status-code", "-title",
             "-follow-redirects", "-silent",

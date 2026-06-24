@@ -9,7 +9,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 COPY --from=nuclei-tool /usr/local/bin/nuclei /usr/local/bin/nuclei
 COPY --from=subfinder-tool /usr/local/bin/subfinder /usr/local/bin/subfinder
-COPY --from=httpx-tool /usr/local/bin/httpx /usr/local/bin/httpx
+COPY --from=httpx-tool /usr/local/bin/httpx /usr/local/bin/httpx_pd
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         nmap \
