@@ -486,18 +486,33 @@ class WeyShieldScanner:
             return []
 
     async def _httpx_probe(self, targets: list[str]) -> dict:
+        import os
         urls = [f"https://{t}" if not t.startswith("http") else t for t in targets]
-        cmd = ["httpx", "-l", "/dev/stdin", "-jsonl", "-tech-detect",
-               "-status-code", "-title", "-follow-redirects", "-silent"]
-        stdout, _ = await self._run_cmd(cmd, timeout=60, stdin_data="\n".join(urls).encode())
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False) as f:
+            f.write("\n".join(urls))
+            targets_file = f.name
+        cmd = [
+            "httpx", "-l", targets_file,
+            "-json", "-td",
+            "-status-code", "-title",
+            "-follow-redirects", "-silent",
+        ]
+        stdout, stderr = await self._run_cmd(cmd, timeout=60)
+        if stderr:
+            logger.warning(f"httpx stderr: {stderr[:500]}")
         results = {}
         if stdout:
             for line in stdout.strip().split("\n"):
+                if not line:
+                    continue
                 try:
                     d = json.loads(line)
-                    results[d.get("url", "")] = d
+                    url = d.get("url", "")
+                    results[url] = {**d, "technologies": d.get("tech", [])}
                 except Exception:
-                    pass
+                    continue
+        logger.info(f"httpx probe returned {len(results)} results for {targets}")
+        os.unlink(targets_file)
         return results
 
     # ------------------------------------------------------------------ #
